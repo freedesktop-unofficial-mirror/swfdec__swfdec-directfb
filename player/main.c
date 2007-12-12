@@ -23,6 +23,7 @@
 #include <libswfdec/swfdec.h>
 #include <directfb.h>
 #include <cairo-directfb.h>
+#include <stdio.h>
 
 #define ERROR_CHECK(x) G_STMT_START{ \
   DFBResult err = (x); \
@@ -65,8 +66,11 @@ main (int argc, char *argv[])
   SwfdecPlayer *player;
   guint w, h;
   Data data;
+  /* config variables */
+  char *size = NULL;
 
-  static const GOptionEntry options[] = {
+  GOptionEntry options[] = {
+    { "size", 's', 0, G_OPTION_ARG_STRING, &size, "WIDTHxHEIGHT to specify a size or \'fullscreen\' to run fullscreen", "STRING" },
     { NULL }
   };
 
@@ -89,9 +93,6 @@ main (int argc, char *argv[])
     return 1;
   }
   
-  ERROR_CHECK (DirectFBCreate (&data.dfb));
-  ERROR_CHECK (data.dfb->SetCooperativeLevel (data.dfb, DFSCL_NORMAL));
-
   player = swfdec_player_new_from_file (argv[1]);
   /* advance till initialized or fail */
   /* NB: This method only knows for file loading */
@@ -104,15 +105,34 @@ main (int argc, char *argv[])
     }
     swfdec_player_advance (player, next_event);
   }
-  swfdec_player_get_default_size (player, &w, &h);
 
-  dsc.flags = DSDESC_CAPS | DSDESC_WIDTH | DSDESC_HEIGHT;
+  ERROR_CHECK (DirectFBCreate (&data.dfb));
+  if (size) {
+    if (g_ascii_strcasecmp (size, "fullscreen") == 0) {
+      ERROR_CHECK (data.dfb->SetCooperativeLevel (data.dfb, DFSCL_FULLSCREEN));
+      dsc.flags = DSDESC_CAPS;
+    } else if (sscanf (size, "%ux%u", &w, &h) == 2) {
+      dsc.flags = DSDESC_CAPS | DSDESC_WIDTH | DSDESC_HEIGHT;
+    } else {
+      g_printerr ("invalid argument for --size specified\n");
+      g_object_unref (player);
+      return 1;
+    }
+  } else {
+    dsc.flags = DSDESC_CAPS | DSDESC_WIDTH | DSDESC_HEIGHT;
+    swfdec_player_get_default_size (player, &w, &h);
+  }
+
   dsc.caps = DSCAPS_DOUBLE | DSCAPS_PRIMARY;
   dsc.width = w;
   dsc.height = h;
   ERROR_CHECK (data.dfb->CreateSurface (data.dfb, &dsc, &data.dfbsurface));
   data.surface = cairo_directfb_surface_create (data.dfb, data.dfbsurface);
-  render (player, &data, 0, 0, w, h);
+
+  ERROR_CHECK (data.dfbsurface->GetSize (data.dfbsurface, &dsc.width, &dsc.height));
+  swfdec_player_set_size (player, dsc.width, dsc.height);
+  render (player, &data, 0, 0, dsc.width, dsc.height);
+
   g_signal_connect (player, "invalidate", G_CALLBACK (invalidate), &data);
   while (TRUE) {
     int next_event = swfdec_player_get_next_event (player);
