@@ -21,6 +21,7 @@
 #include "config.h"
 #endif
 #include <libswfdec/swfdec.h>
+#include <swfdec-directfb/swfdec-directfb.h>
 #include <directfb.h>
 #include <cairo-directfb.h>
 #include <stdio.h>
@@ -93,18 +94,7 @@ main (int argc, char *argv[])
     return 1;
   }
   
-  player = swfdec_player_new_from_file (argv[1]);
-  /* advance till initialized or fail */
-  /* NB: This method only knows for file loading */
-  while (!swfdec_player_is_initialized (player)) {
-    long next_event = swfdec_player_get_next_event (player);
-    if (next_event < 0) {
-      g_object_unref (player);
-      g_printerr ("\"%s\" is not a file Swfdec can play.\n", argv[1]);
-      return 1;
-    }
-    swfdec_player_advance (player, next_event);
-  }
+  player = swfdec_dfb_player_new_from_file (argv[1]);
 
   ERROR_CHECK (DirectFBCreate (&data.dfb));
   if (size) {
@@ -119,8 +109,7 @@ main (int argc, char *argv[])
       return 1;
     }
   } else {
-    dsc.flags = DSDESC_CAPS | DSDESC_WIDTH | DSDESC_HEIGHT;
-    swfdec_player_get_default_size (player, &w, &h);
+    dsc.flags = DSDESC_CAPS;
   }
 
   dsc.caps = DSCAPS_DOUBLE | DSCAPS_PRIMARY;
@@ -134,10 +123,8 @@ main (int argc, char *argv[])
   render (player, &data, 0, 0, dsc.width, dsc.height);
 
   g_signal_connect (player, "invalidate", G_CALLBACK (invalidate), &data);
-  while (TRUE) {
-    int next_event = swfdec_player_get_next_event (player);
-    swfdec_player_advance (player, next_event);
-  };
+  swfdec_dfb_player_set_playing (SWFDEC_DFB_PLAYER (player), TRUE);
+  swfdec_dfb_main ();
 
   return 0;
 }
