@@ -106,6 +106,10 @@ swfdec_dfb_player_dispose (GObject *object)
   SwfdecDfbPlayer *player = SWFDEC_DFB_PLAYER (object);
 
   swfdec_dfb_player_set_playing (player, FALSE);
+  if (player->dfb) {
+    player->dfb->Release (player->dfb);
+    player->dfb = NULL;
+  }
 
   G_OBJECT_CLASS (swfdec_dfb_player_parent_class)->dispose (object);
 }
@@ -149,12 +153,15 @@ swfdec_dfb_player_init (SwfdecDfbPlayer * player)
  * Returns: The new player
  **/
 SwfdecPlayer *
-swfdec_dfb_player_new (SwfdecAsDebugger *debugger)
+swfdec_dfb_player_new (IDirectFB *dfb, SwfdecAsDebugger *debugger)
 {
   SwfdecPlayer *player;
 
+  g_return_val_if_fail (dfb != NULL, NULL);
   swfdec_init ();
   player = g_object_new (SWFDEC_TYPE_DFB_PLAYER, "debugger", debugger, NULL);
+  SWFDEC_DFB_PLAYER (player)->dfb = dfb;
+  dfb->AddRef (dfb);
 
   return player;
 }
@@ -172,14 +179,15 @@ swfdec_dfb_player_new (SwfdecAsDebugger *debugger)
  * Returns: a new player.
  **/
 SwfdecPlayer *
-swfdec_dfb_player_new_from_file (const char *filename)
+swfdec_dfb_player_new_from_file (IDirectFB *dfb, const char *filename)
 {
   SwfdecLoader *loader;
   SwfdecPlayer *player;
 
+  g_return_val_if_fail (dfb != NULL, NULL);
   g_return_val_if_fail (filename != NULL, NULL);
 
-  player = swfdec_dfb_player_new (NULL);
+  player = swfdec_dfb_player_new (dfb, NULL);
   loader = swfdec_file_loader_new (filename);
   swfdec_player_set_loader (player, loader);
 

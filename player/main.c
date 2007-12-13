@@ -94,9 +94,9 @@ main (int argc, char *argv[])
     return 1;
   }
   
-  player = swfdec_dfb_player_new_from_file (argv[1]);
-
   ERROR_CHECK (DirectFBCreate (&data.dfb));
+  player = swfdec_dfb_player_new_from_file (data.dfb, argv[1]);
+
   if (size) {
     if (g_ascii_strcasecmp (size, "fullscreen") == 0) {
       ERROR_CHECK (data.dfb->SetCooperativeLevel (data.dfb, DFSCL_FULLSCREEN));

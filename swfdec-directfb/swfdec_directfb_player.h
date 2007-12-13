@@ -21,6 +21,7 @@
 #define _SWFDEC_DFB_PLAYER_H_
 
 #include <libswfdec/swfdec.h>
+#include <directfb.h>
 
 G_BEGIN_DECLS
 
@@ -38,6 +39,8 @@ struct _SwfdecDfbPlayer
 {
   SwfdecPlayer		player;
 
+  IDirectFB *		dfb;		/* the DirectFB object we play on */
+
   GSource *		source;		/* source if playing, NULL otherwise */
   gboolean		audio_enabled;	/* TRUE if audio should be played */
   double		speed;		/* desired playback speed */
@@ -50,8 +53,10 @@ struct _SwfdecDfbPlayerClass
 
 GType 		swfdec_dfb_player_get_type    	(void);
 
-SwfdecPlayer *	swfdec_dfb_player_new	      	(SwfdecAsDebugger *	debugger);
-SwfdecPlayer *	swfdec_dfb_player_new_from_file	(const char *		filename);
+SwfdecPlayer *	swfdec_dfb_player_new	      	(IDirectFB *		dfb,
+						 SwfdecAsDebugger *	debugger);
+SwfdecPlayer *	swfdec_dfb_player_new_from_file	(IDirectFB *		dfb,
+						 const char *		filename);
 
 void		swfdec_dfb_player_set_playing 	(SwfdecDfbPlayer *	player,
 						 gboolean		playing);
