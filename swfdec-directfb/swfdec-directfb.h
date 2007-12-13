@@ -22,5 +22,6 @@
 
 #include <swfdec-directfb/swfdec_directfb_main.h>
 #include <swfdec-directfb/swfdec_directfb_player.h>
+#include <swfdec-directfb/swfdec_directfb_renderer.h>
 
 #endif

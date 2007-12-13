@@ -41,6 +41,7 @@ struct _SwfdecDfbPlayer
 
   IDirectFB *		dfb;		/* the DirectFB object we play on */
 
+  /* properties */
   GSource *		source;		/* source if playing, NULL otherwise */
   gboolean		audio_enabled;	/* TRUE if audio should be played */
   double		speed;		/* desired playback speed */

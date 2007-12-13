@@ -3,7 +3,8 @@ lib_LTLIBRARIES = libswfdec-directfb-@SWFDEC_MAJORMINOR@.la
 libswfdec_directfb_@SWFDEC_MAJORMINOR@_la_SOURCES = \
 	swfdec_source.c \
 	swfdec_directfb_main.c \
-	swfdec_directfb_player.c
+	swfdec_directfb_player.c \
+	swfdec_directfb_renderer.c
 
 noinst_HEADERS = \
 	swfdec_source.h
@@ -22,5 +23,6 @@ libswfdec_@SWFDEC_MAJORMINOR@includedir = $(includedir)/swfdec-@SWFDEC_MAJORMINO
 libswfdec_@SWFDEC_MAJORMINOR@include_HEADERS = \
 	swfdec-directfb.h \
 	swfdec_directfb_main.h \
-	swfdec_directfb_player.h
+	swfdec_directfb_player.h \
+	swfdec_directfb_renderer.h
 

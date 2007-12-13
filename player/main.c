@@ -20,10 +20,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <libswfdec/swfdec.h>
 #include <swfdec-directfb/swfdec-directfb.h>
 #include <directfb.h>
-#include <cairo-directfb.h>
 #include <stdio.h>
 
 #define ERROR_CHECK(x) G_STMT_START{ \
@@ -33,31 +31,6 @@
   } \
 }G_STMT_END
 
-typedef struct {
-  IDirectFB *dfb;
-  IDirectFBSurface *dfbsurface;
-  cairo_surface_t *surface;
-} Data;
-
-static void
-render (SwfdecPlayer *player, Data *data, guint x, guint y, guint w, guint h)
-{
-  /* region include the bottom right pixel */
-  DFBRegion region = { x, y, x + w - 1, y + h - 1 };
-  cairo_t *cr;
-
-  cr = cairo_create (data->surface);
-  swfdec_player_render (player, cr, x, y, w, h);
-  cairo_destroy (cr);
-  data->dfbsurface->Flip (data->dfbsurface, &region, DSFLIP_ONSYNC);
-}
-
-static void
-invalidate (SwfdecPlayer *player, SwfdecRectangle *extents, SwfdecRectangle *rects, guint n_rects, Data *data)
-{
-  render (player, data, extents->x, extents->y, extents->width, extents->height);
-}
-
 int 
 main (int argc, char *argv[])
 {
@@ -65,8 +38,10 @@ main (int argc, char *argv[])
   GOptionContext *ctx;
   DFBSurfaceDescription dsc;
   SwfdecPlayer *player;
+  SwfdecDfbRenderer *renderer;
   guint w, h;
-  Data data;
+  IDirectFB *dfb;
+  IDirectFBSurface *surface;
   /* config variables */
   char *size = NULL;
 
@@ -94,38 +69,37 @@ main (int argc, char *argv[])
     return 1;
   }
   
-  ERROR_CHECK (DirectFBCreate (&data.dfb));
-  player = swfdec_dfb_player_new_from_file (data.dfb, argv[1]);
+  ERROR_CHECK (DirectFBCreate (&dfb));
+  player = swfdec_dfb_player_new_from_file (dfb, argv[1]);
 
+  dsc.flags = DSDESC_CAPS;
+  dsc.caps = DSCAPS_DOUBLE | DSCAPS_PRIMARY;
   if (size) {
     if (g_ascii_strcasecmp (size, "fullscreen") == 0) {
-      ERROR_CHECK (data.dfb->SetCooperativeLevel (data.dfb, DFSCL_FULLSCREEN));
-      dsc.flags = DSDESC_CAPS;
+      ERROR_CHECK (dfb->SetCooperativeLevel (dfb, DFSCL_FULLSCREEN));
     } else if (sscanf (size, "%ux%u", &w, &h) == 2) {
-      dsc.flags = DSDESC_CAPS | DSDESC_WIDTH | DSDESC_HEIGHT;
+      dsc.flags |= DSDESC_CAPS | DSDESC_WIDTH | DSDESC_HEIGHT;
+      dsc.width = w;
+      dsc.height = h;
     } else {
       g_printerr ("invalid argument for --size specified\n");
       g_object_unref (player);
       return 1;
     }
-  } else {
-    dsc.flags = DSDESC_CAPS;
   }
 
-  dsc.caps = DSCAPS_DOUBLE | DSCAPS_PRIMARY;
-  dsc.width = w;
-  dsc.height = h;
-  ERROR_CHECK (data.dfb->CreateSurface (data.dfb, &dsc, &data.dfbsurface));
-  data.surface = cairo_directfb_surface_create (data.dfb, data.dfbsurface);
+  ERROR_CHECK (dfb->CreateSurface (dfb, &dsc, &surface));
+  //ERROR_CHECK (surface->GetSize (surface, &dsc.width, &dsc.height));
+  //swfdec_player_set_size (player, dsc.width, dsc.height);
+  renderer = swfdec_dfb_renderer_new (dfb, surface, player);
 
-  ERROR_CHECK (data.dfbsurface->GetSize (data.dfbsurface, &dsc.width, &dsc.height));
-  swfdec_player_set_size (player, dsc.width, dsc.height);
-  render (player, &data, 0, 0, dsc.width, dsc.height);
-
-  g_signal_connect (player, "invalidate", G_CALLBACK (invalidate), &data);
   swfdec_dfb_player_set_playing (SWFDEC_DFB_PLAYER (player), TRUE);
   swfdec_dfb_main ();
 
+  g_object_unref (renderer);
+  g_object_unref (player);
+  surface->Release (surface);
+  dfb->Release (dfb);
   return 0;
 }
 
