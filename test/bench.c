@@ -47,9 +47,11 @@ main (int argc, char *argv[])
   int total = 0;
   /* config variables */
   int seconds = 10000;
+  gboolean primary = FALSE;
   gboolean verbose = FALSE;
 
   GOptionEntry options[] = {
+    { "primary", 'p', 0, G_OPTION_ARG_NONE, &primary, "use the primary display", NULL },
     { "time", 't', 0, G_OPTION_ARG_INT, &seconds, "number of milliseconds to advance (default: 10.000)", "mSECS" },
     { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "be verbose", NULL },
     { NULL }
@@ -86,6 +88,10 @@ main (int argc, char *argv[])
   dsc.flags = DSDESC_WIDTH | DSDESC_HEIGHT;
   dsc.width = w;
   dsc.height = h;
+  if (primary) {
+    dsc.flags |= DSDESC_CAPS;
+    dsc.caps = DSCAPS_PRIMARY;
+  }
 
   ERROR_CHECK (dfb->CreateSurface (dfb, &dsc, &surface));
   renderer = swfdec_dfb_renderer_new (dfb, surface, player);
