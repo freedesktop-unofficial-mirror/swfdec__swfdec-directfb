@@ -84,6 +84,7 @@ AC_CONFIG_FILES(
   data/Makefile
   swfdec-directfb/Makefile
   player/Makefile
+  test/Makefile
 )
 
 AC_OUTPUT

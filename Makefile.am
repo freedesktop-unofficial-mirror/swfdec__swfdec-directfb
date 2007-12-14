@@ -1,7 +1,8 @@
 SUBDIRS= \
 	data \
 	swfdec-directfb \
-	player
+	player \
+	test
 
 ACLOCAL_FLAGS = -I m4
 
