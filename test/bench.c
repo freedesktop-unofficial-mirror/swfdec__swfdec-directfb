@@ -44,12 +44,14 @@ main (int argc, char *argv[])
   IDirectFBSurface *surface;
   long next_event;
   GTimer *timer;
-  /* config variables */
   int total = 0;
+  /* config variables */
   int seconds = 10000;
+  gboolean verbose = FALSE;
 
   GOptionEntry options[] = {
     { "time", 't', 0, G_OPTION_ARG_INT, &seconds, "number of milliseconds to advance (default: 10.000)", "mSECS" },
+    { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "be verbose", NULL },
     { NULL }
   };
 
@@ -95,6 +97,8 @@ main (int argc, char *argv[])
     total += next_event;
     while (g_main_context_iteration (NULL, FALSE));
 
+    if (verbose)
+      g_print ("advanced %u.%03us in %.3gs\n", total / 1000, total % 1000, g_timer_elapsed (timer, NULL));
     next_event = swfdec_player_get_next_event (player);
   }
   g_timer_stop (timer);
