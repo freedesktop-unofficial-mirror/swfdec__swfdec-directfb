@@ -98,6 +98,7 @@ swfdec_dfb_renderer_new (IDirectFB *dfb, IDirectFBSurface *surface,
     SwfdecPlayer *player)
 {
   SwfdecDfbRenderer *renderer;
+  SwfdecRectangle rect;
 
   g_return_val_if_fail (dfb != NULL, NULL);
   g_return_val_if_fail (surface != NULL, NULL);
@@ -111,6 +112,10 @@ swfdec_dfb_renderer_new (IDirectFB *dfb, IDirectFBSurface *surface,
   surface->GetSize (surface, &renderer->width, &renderer->height);
   renderer->player = g_object_ref (player);
   g_signal_connect (player, "invalidate", G_CALLBACK (swfdec_dfb_renderer_invalidate_cb), renderer);
+  rect.x = rect.y = 0;
+  rect.width = renderer->width;
+  rect.height = renderer->height;
+  swfdec_dfb_renderer_queue_repaint (renderer, &rect);
 
   return renderer;
 }
