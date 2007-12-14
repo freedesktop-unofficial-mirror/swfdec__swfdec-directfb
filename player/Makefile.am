@@ -1,4 +1,4 @@
-noinst_PROGRAMS = swfdec-directfb-player
+bin_PROGRAMS = swfdec-directfb-player
 
 swfdec_directfb_player_SOURCES = \
 	main.c
