@@ -44,6 +44,10 @@ swfdec_dfb_renderer_dispose (GObject *object)
     g_object_unref (renderer->player);
     renderer->player = NULL;
   }
+  if (renderer->repaint_id) {
+    g_source_remove (renderer->repaint_id);
+    renderer->repaint_id = 0;
+  }
 
   G_OBJECT_CLASS (swfdec_dfb_renderer_parent_class)->dispose (object);
 }
