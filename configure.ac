@@ -1,5 +1,5 @@
 AC_PREREQ([2.58])
-AC_INIT(swfdec-directfb,0.5.4.1)
+AC_INIT(swfdec-directfb,0.5.5.1)
 
 [nano=$(echo $PACKAGE_VERSION | sed 's/[0-9]\.[0-9]\.[0-9][0-9]*\.*//')]
 if test x"$nano" = x1 ; then
@@ -52,7 +52,7 @@ AC_ARG_WITH(pkg-config-path,
 dnl Check for essential libraries first:
 dnl ====================================
 
-SWFDEC_REQUIRES=0.5.4.1
+SWFDEC_REQUIRES=0.5.5.1
 AC_SUBST(SWFDEC_REQUIRES)
 PKG_CHECK_MODULES(SWFDEC, swfdec-$SWFDEC_MAJORMINOR = $SWFDEC_REQUIRES, HAVE_SWFDEC=yes, HAVE_SWFDEC=no)
 if test "$HAVE_SWFDEC" = "no"; then
