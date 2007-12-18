@@ -94,7 +94,19 @@ static void
 swfdec_dfb_renderer_invalidate_cb (SwfdecPlayer *player, const SwfdecRectangle *extents,
     const SwfdecRectangle *rects, guint n_rects, SwfdecDfbRenderer *renderer)
 {
-  swfdec_dfb_renderer_queue_repaint (renderer, extents);
+  SwfdecRectangle tmp = *extents;
+
+  if (tmp.x + tmp.width > renderer->width) {
+    if (tmp.x >= renderer->width)
+      return;
+    tmp.width = renderer->width - tmp.x;
+  }
+  if (tmp.y + tmp.height > renderer->height) {
+    if (tmp.y >= renderer->height)
+      return;
+    tmp.height = renderer->height - tmp.y;
+  }
+  swfdec_dfb_renderer_queue_repaint (renderer, &tmp);
 }
 
 SwfdecDfbRenderer *
