@@ -49,8 +49,8 @@ main (int argc, char *argv[])
 
   GOptionEntry options[] = {
     { "size", 's', 0, G_OPTION_ARG_STRING, &size, "WIDTHxHEIGHT to specify a size or \'fullscreen\' to run fullscreen", "STRING" },
-    { "cache-size", 'c', 0, G_OPTION_ARG_INT, &cache_size, "Amount of kB allowed as cache", "KB" },
-    { "garbage-size", 'g', 0, G_OPTION_ARG_INT, &garbage_size, "Amount of kB before garbage collection runs", "KB" },
+    { "cache-size", 'c', 0, G_OPTION_ARG_INT, &cache_size, "Maxmimum amount of memory to be used as cache (default: 50MB)", "KB" },
+    { "garbage-size", 'g', 0, G_OPTION_ARG_INT, &garbage_size, "Amount of kB before garbage collection runs (default: 8MB)", "KB" },
     { NULL }
   };
 
