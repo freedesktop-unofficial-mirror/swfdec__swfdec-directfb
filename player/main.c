@@ -22,6 +22,7 @@
 #endif
 #include <swfdec-directfb/swfdec-directfb.h>
 #include <directfb.h>
+#include <directfb/directfb_strings.h>
 #include <stdio.h>
 
 #define ERROR_CHECK(x) G_STMT_START{ \
@@ -30,6 +31,26 @@
     DirectFBErrorFatal ("fatal error", err); \
   } \
 }G_STMT_END
+
+static DFBSurfacePixelFormat pixel_format = DSPF_UNKNOWN;
+
+static gboolean
+parse_pixel_format (const gchar *option_name, const gchar *value, gpointer data,
+    GError **error)
+{
+  static const DirectFBPixelFormatNames (names)
+  guint i;
+
+  for (i = 0; i < G_N_ELEMENTS (names); i++) {
+    if (g_ascii_strcasecmp (names[i].name, value) == 0) {
+      pixel_format = names[i].format;
+      return TRUE;
+    }
+  }
+  g_set_error (error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
+      "%s is not a valid pixel format", value);
+  return FALSE;
+}
 
 int 
 main (int argc, char *argv[])
@@ -48,9 +69,10 @@ main (int argc, char *argv[])
   int garbage_size = 8 * 1024; /* 8 MB - Swfdec default value */
 
   GOptionEntry options[] = {
-    { "size", 's', 0, G_OPTION_ARG_STRING, &size, "WIDTHxHEIGHT to specify a size or \'fullscreen\' to run fullscreen", "STRING" },
     { "cache-size", 'c', 0, G_OPTION_ARG_INT, &cache_size, "Maxmimum amount of memory to be used as cache (default: 50MB)", "KB" },
+    { "format", 'f', 0, G_OPTION_ARG_CALLBACK, parse_pixel_format, "pixel format to use for the outpt window", "FORMAT" },
     { "garbage-size", 'g', 0, G_OPTION_ARG_INT, &garbage_size, "Amount of kB before garbage collection runs (default: 8MB)", "KB" },
+    { "size", 's', 0, G_OPTION_ARG_STRING, &size, "WIDTHxHEIGHT to specify a size or \'fullscreen\' to run fullscreen", "STRING" },
     { NULL }
   };
 
@@ -80,11 +102,15 @@ main (int argc, char *argv[])
 
   dsc.flags = DSDESC_CAPS;
   dsc.caps = DSCAPS_DOUBLE | DSCAPS_PRIMARY;
+  if (pixel_format != DSPF_UNKNOWN) {
+    dsc.flags |= DSDESC_PIXELFORMAT;
+    dsc.pixelformat = pixel_format;
+  }
   if (size) {
     if (g_ascii_strcasecmp (size, "fullscreen") == 0) {
       ERROR_CHECK (dfb->SetCooperativeLevel (dfb, DFSCL_FULLSCREEN));
     } else if (sscanf (size, "%ux%u", &w, &h) == 2) {
-      dsc.flags |= DSDESC_CAPS | DSDESC_WIDTH | DSDESC_HEIGHT;
+      dsc.flags |= DSDESC_WIDTH | DSDESC_HEIGHT;
       dsc.width = w;
       dsc.height = h;
     } else {
