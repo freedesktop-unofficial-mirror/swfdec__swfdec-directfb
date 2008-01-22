@@ -44,9 +44,13 @@ main (int argc, char *argv[])
   IDirectFBSurface *surface;
   /* config variables */
   char *size = NULL;
+  int cache_size = 50 * 1024; /* 50 MB - Swfdec default value */
+  int garbage_size = 8 * 1024; /* 8 MB - Swfdec default value */
 
   GOptionEntry options[] = {
     { "size", 's', 0, G_OPTION_ARG_STRING, &size, "WIDTHxHEIGHT to specify a size or \'fullscreen\' to run fullscreen", "STRING" },
+    { "cache-size", 'c', 0, G_OPTION_ARG_INT, &cache_size, "Amount of kB allowed as cache", "KB" },
+    { "garbage-size", 'g', 0, G_OPTION_ARG_INT, &garbage_size, "Amount of kB before garbage collection runs", "KB" },
     { NULL }
   };
 
@@ -71,6 +75,8 @@ main (int argc, char *argv[])
   
   ERROR_CHECK (DirectFBCreate (&dfb));
   player = swfdec_dfb_player_new_from_file (dfb, argv[1]);
+  g_object_set (player, "cache-size", (gulong) cache_size * 1024, 
+      "memory-until-gc", (gulong) garbage_size * 1024, NULL);
 
   dsc.flags = DSDESC_CAPS;
   dsc.caps = DSCAPS_DOUBLE | DSCAPS_PRIMARY;
