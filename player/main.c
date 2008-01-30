@@ -118,6 +118,8 @@ main (int argc, char *argv[])
       g_object_unref (player);
       return 1;
     }
+  } else {
+    ERROR_CHECK (dfb->SetCooperativeLevel (dfb, DFSCL_FULLSCREEN));
   }
 
   ERROR_CHECK (dfb->CreateSurface (dfb, &dsc, &surface));
