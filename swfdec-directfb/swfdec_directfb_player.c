@@ -77,6 +77,9 @@ swfdec_dfb_player_get_property (GObject *object, guint param_id, GValue *value,
     case PROP_DFB:
       g_value_set_pointer (value, player->dfb);
       break;
+    case PROP_HANDLE_EVENTS:
+      g_value_set_boolean (value, swfdec_dfb_player_get_handle_events (player));
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
       break;
@@ -104,6 +107,9 @@ swfdec_dfb_player_set_property (GObject *object, guint param_id, const GValue *v
       g_return_if_fail (player->dfb); 
       player->dfb->AddRef (player->dfb);
       break;
+    case PROP_HANDLE_EVENTS:
+      swfdec_dfb_player_set_handle_events ((player), g_value_get_boolean (value));
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
       break;
@@ -116,6 +122,7 @@ swfdec_dfb_player_dispose (GObject *object)
   SwfdecDfbPlayer *player = SWFDEC_DFB_PLAYER (object);
 
   swfdec_dfb_player_set_playing (player, FALSE);
+  swfdec_dfb_player_set_handle_events (player, FALSE);
   if (player->dfb) {
     player->dfb->Release (player->dfb);
     player->dfb = NULL;
@@ -145,6 +152,9 @@ swfdec_dfb_player_class_init (SwfdecDfbPlayerClass * g_class)
   g_object_class_install_property (object_class, PROP_DFB,
       g_param_spec_pointer ("directfb", "directfb", "The directfb object this player operates on",
 	  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+  g_object_class_install_property (object_class, PROP_HANDLE_EVENTS,
+      g_param_spec_boolean ("handle-events", "handle events", "wether player has a global event handler installed",
+	  FALSE, G_PARAM_READWRITE));
 }
 
 static void
@@ -290,8 +300,137 @@ swfdec_dfb_player_set_speed (SwfdecDfbPlayer *player, double speed)
 double
 swfdec_dfb_player_get_speed (SwfdecDfbPlayer *player)
 {
-  g_return_val_if_fail (SWFDEC_IS_DFB_PLAYER (player), FALSE);
+  g_return_val_if_fail (SWFDEC_IS_DFB_PLAYER (player), 0.0);
 
   return player->speed;
+}
+
+/**
+ * swfdec_dfb_player_handle_input_event:
+ * @player: the player that receives the event
+ * @event: the event to handle
+ *
+ * Provides an input event to the @player. The player handles keyboard and mouse 
+ * events in a generic way. If you want to use a more complex mechanism, you 
+ * have to write your own event handling code.
+ *
+ * Returns: %TRUE if the event was handled, %FALSE otherwise.
+ **/
+gboolean
+swfdec_dfb_player_handle_input_event (SwfdecDfbPlayer *player, const DFBInputEvent *event)
+{
+  g_return_val_if_fail (SWFDEC_IS_DFB_PLAYER (player), FALSE);
+  g_return_val_if_fail (event != NULL, FALSE);
+
+  switch (event->type) {
+    case DIET_KEYPRESS:
+    case DIET_KEYRELEASE:
+      /* FIXME! */
+      break;
+    case DIET_BUTTONPRESS:
+      swfdec_player_mouse_press (SWFDEC_PLAYER (player), 
+	  player->x, player->y, event->button + 1);
+      break;
+    case DIET_BUTTONRELEASE:
+      swfdec_player_mouse_release (SWFDEC_PLAYER (player), 
+	  player->x, player->y, event->button + 1);
+      break;
+    case DIET_AXISMOTION:
+      if (event->axis == DIAI_X) {
+	player->x = event->axisabs;
+      } else if (event->axis == DIAI_Y) {
+	player->y = event->axisabs;
+      } else {
+	return FALSE;
+      }
+      /* only emit mouse movements if no new mouse move event follows */
+      if ((event->flags & DIEF_FOLLOW) == 0)
+	swfdec_player_mouse_move (SWFDEC_PLAYER (player), player->x, player->y);
+      break;
+    case DIET_UNKNOWN:
+    default:
+      return FALSE;
+  }
+  return TRUE;
+}
+
+static gboolean
+swfdec_dfb_player_event_io (GIOChannel *channel, GIOCondition condition, gpointer player)
+{
+  gsize i, n;
+  DFBEvent events[32];
+
+  if (g_io_channel_read_chars (channel, (gchar *) events, sizeof (events), &n, NULL) != G_IO_STATUS_NORMAL)
+    return TRUE;
+
+  n /= sizeof (DFBEvent);
+
+  for (i = 0; i < n; i++) {
+    if (events[i].clazz != DFEC_INPUT)
+      continue;
+
+    swfdec_dfb_player_handle_input_event (player, (DFBInputEvent *) &events[i]);
+  }
+
+  /* FIXME: need to reset here? */
+  return TRUE;
+}
+
+gboolean
+swfdec_dfb_player_set_handle_events (SwfdecDfbPlayer *player, gboolean handle_events)
+{
+  g_return_val_if_fail (SWFDEC_IS_DFB_PLAYER (player), FALSE);
+
+  if (swfdec_dfb_player_get_handle_events (player) == handle_events)
+    return TRUE;
+
+  if (handle_events) {
+    GIOChannel *channel;
+    int fd;
+
+    if (player->dfb->CreateInputEventBuffer (player->dfb, DICAPS_ALL, DFB_FALSE, &player->events))
+      return FALSE;
+    if (player->events->CreateFileDescriptor (player->events, &fd)) {
+      player->events->Release (player->events);
+      player->events = NULL;
+      return FALSE;
+    }
+    
+    channel = g_io_channel_unix_new (fd);
+    g_io_channel_set_encoding (channel, NULL, NULL);
+    g_io_channel_set_buffered (channel, FALSE);
+
+    player->event_source = g_io_create_watch (channel, G_IO_IN);
+    g_source_set_priority (player->event_source, G_PRIORITY_DEFAULT);
+    g_source_set_can_recurse (player->event_source, TRUE);
+    g_source_set_callback (player->event_source, (GSourceFunc) swfdec_dfb_player_event_io, player, NULL);
+    g_source_attach (player->event_source, NULL);
+    g_io_channel_unref (channel);
+  } else {
+    g_source_destroy (player->event_source);
+    g_source_unref (player->event_source);
+    player->event_source = NULL;
+    player->events->Release (player->events);
+    player->events = NULL;
+  }
+  g_object_notify (G_OBJECT (player), "handle-events");
+  return TRUE;
+}
+
+/**
+ * swfdec_dfb_player_get_handle_events:
+ * @player: the player to query
+ *
+ * Queries if the given @player has a global event handler installed. See 
+ * swfdec_dfb_player_set_handle_events() for what that means.
+ *
+ * Returns: %TRUE if a global event handler is installed
+ **/
+gboolean
+swfdec_dfb_player_get_handle_events (SwfdecDfbPlayer *player)
+{
+  g_return_val_if_fail (SWFDEC_IS_DFB_PLAYER (player), FALSE);
+
+  return player->events != NULL;
 }
 

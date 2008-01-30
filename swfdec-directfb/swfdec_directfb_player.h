@@ -45,6 +45,12 @@ struct _SwfdecDfbPlayer
   GSource *		source;		/* source if playing, NULL otherwise */
   gboolean		audio_enabled;	/* TRUE if audio should be played */
   double		speed;		/* desired playback speed */
+
+  /* input handling */
+  IDirectFBEventBuffer *events;		/* where we get our events from or NULL */
+  GSource *		event_source;	/* the source getting those events or NULL */
+  int			x;		/* last known X coordinate */
+  int			y;		/* last known Y coordinate */
 };
 
 struct _SwfdecDfbPlayerClass
@@ -67,9 +73,9 @@ void		swfdec_dfb_player_set_speed		(SwfdecDfbPlayer *	player,
 							 double			speed);
 double		swfdec_dfb_player_get_speed		(SwfdecDfbPlayer *	player);
 
-gboolean      	swfdec_dfb_player_handle_event		(SwfdecDfbPlayer *	player,
+gboolean      	swfdec_dfb_player_handle_input_event  	(SwfdecDfbPlayer *	player,
 							 const DFBInputEvent *	event);
-void		swfdec_dfb_player_set_handle_events	(SwfdecDfbPlayer *	player,
+gboolean	swfdec_dfb_player_set_handle_events	(SwfdecDfbPlayer *	player,
 							 gboolean		handle_events);
 gboolean      	swfdec_dfb_player_get_handle_events	(SwfdecDfbPlayer *	player);
 

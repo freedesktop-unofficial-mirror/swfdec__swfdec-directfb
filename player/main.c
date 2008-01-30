@@ -102,7 +102,8 @@ main (int argc, char *argv[])
   ERROR_CHECK (DirectFBCreate (&dfb));
   player = swfdec_dfb_player_new (dfb, NULL);
   g_object_set (player, "cache-size", (gulong) cache_size * 1024, 
-      "memory-until-gc", (gulong) garbage_size * 1024, NULL);
+      "memory-until-gc", (gulong) garbage_size * 1024, "handle-events", TRUE, 
+      NULL);
   if (no_background)
     g_object_set (player, "background-color", 0, NULL);
 
