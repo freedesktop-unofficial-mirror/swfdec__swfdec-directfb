@@ -20,6 +20,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <swfdec/swfdec.h>
 #include <swfdec-directfb/swfdec-directfb.h>
 #include <directfb.h>
 #include <directfb/directfb_strings.h>
@@ -59,6 +60,7 @@ main (int argc, char *argv[])
   GOptionContext *ctx;
   DFBSurfaceDescription dsc;
   SwfdecPlayer *player;
+  SwfdecURL *url;
   SwfdecDfbRenderer *renderer;
   guint w, h;
   IDirectFB *dfb;
@@ -98,7 +100,7 @@ main (int argc, char *argv[])
   }
   
   ERROR_CHECK (DirectFBCreate (&dfb));
-  player = swfdec_dfb_player_new_from_file (dfb, argv[1]);
+  player = swfdec_dfb_player_new (dfb, NULL);
   g_object_set (player, "cache-size", (gulong) cache_size * 1024, 
       "memory-until-gc", (gulong) garbage_size * 1024, NULL);
   if (no_background)
@@ -131,6 +133,9 @@ main (int argc, char *argv[])
   //swfdec_player_set_size (player, dsc.width, dsc.height);
   renderer = swfdec_dfb_renderer_new (dfb, surface, player);
 
+  url = swfdec_url_new_from_input (argv[1]);
+  swfdec_player_set_url (player, url);
+  swfdec_url_free (url);
   swfdec_dfb_player_set_playing (SWFDEC_DFB_PLAYER (player), TRUE);
   swfdec_dfb_main ();
 
