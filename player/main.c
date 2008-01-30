@@ -20,7 +20,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <swfdec/swfdec.h>
 #include <swfdec-directfb/swfdec-directfb.h>
 #include <directfb.h>
 #include <directfb/directfb_strings.h>
