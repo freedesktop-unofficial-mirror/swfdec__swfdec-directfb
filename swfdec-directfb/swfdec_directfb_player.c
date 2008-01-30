@@ -28,7 +28,9 @@ enum {
   PROP_0,
   PROP_PLAYING,
   PROP_AUDIO,
-  PROP_SPEED
+  PROP_SPEED,
+  PROP_DFB,
+  PROP_HANDLE_EVENTS
 };
 
 /*** dfb-doc ***/
@@ -72,6 +74,9 @@ swfdec_dfb_player_get_property (GObject *object, guint param_id, GValue *value,
     case PROP_SPEED:
       g_value_set_double (value, player->speed);
       break;
+    case PROP_DFB:
+      g_value_set_pointer (value, player->dfb);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
       break;
@@ -93,6 +98,11 @@ swfdec_dfb_player_set_property (GObject *object, guint param_id, const GValue *v
       break;
     case PROP_SPEED:
       swfdec_dfb_player_set_speed (player, g_value_get_double (value));
+      break;
+    case PROP_DFB:
+      player->dfb = g_value_get_pointer (value);
+      g_return_if_fail (player->dfb); 
+      player->dfb->AddRef (player->dfb);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
@@ -132,6 +142,9 @@ swfdec_dfb_player_class_init (SwfdecDfbPlayerClass * g_class)
   g_object_class_install_property (object_class, PROP_SPEED,
       g_param_spec_double ("speed", "speed", "desired playback speed",
 	  G_MINDOUBLE, G_MAXDOUBLE, 1.0, G_PARAM_READWRITE));
+  g_object_class_install_property (object_class, PROP_DFB,
+      g_param_spec_pointer ("directfb", "directfb", "The directfb object this player operates on",
+	  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 }
 
 static void
@@ -158,13 +171,12 @@ swfdec_dfb_player_new (IDirectFB *dfb, SwfdecAsDebugger *debugger)
   SwfdecPlayer *player;
 
   g_return_val_if_fail (dfb != NULL, NULL);
+
   swfdec_init ();
-  player = g_object_new (SWFDEC_TYPE_DFB_PLAYER, 
+  player = g_object_new (SWFDEC_TYPE_DFB_PLAYER, "directfb", dfb, 
       "loader-type", SWFDEC_TYPE_FILE_LOADER, "socket-type", SWFDEC_TYPE_SOCKET,
       "debugger", debugger, 
       NULL);
-  SWFDEC_DFB_PLAYER (player)->dfb = dfb;
-  dfb->AddRef (dfb);
 
   return player;
 }
@@ -282,3 +294,4 @@ swfdec_dfb_player_get_speed (SwfdecDfbPlayer *player)
 
   return player->speed;
 }
+

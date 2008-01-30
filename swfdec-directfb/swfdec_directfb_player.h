@@ -67,6 +67,12 @@ void		swfdec_dfb_player_set_speed		(SwfdecDfbPlayer *	player,
 							 double			speed);
 double		swfdec_dfb_player_get_speed		(SwfdecDfbPlayer *	player);
 
+gboolean      	swfdec_dfb_player_handle_event		(SwfdecDfbPlayer *	player,
+							 const DFBInputEvent *	event);
+void		swfdec_dfb_player_set_handle_events	(SwfdecDfbPlayer *	player,
+							 gboolean		handle_events);
+gboolean      	swfdec_dfb_player_get_handle_events	(SwfdecDfbPlayer *	player);
+
 
 
 G_END_DECLS
