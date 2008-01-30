@@ -64,6 +64,7 @@ main (int argc, char *argv[])
   IDirectFB *dfb;
   IDirectFBSurface *surface;
   /* config variables */
+  gboolean no_background = FALSE;
   char *size = NULL;
   int cache_size = 50 * 1024; /* 50 MB - Swfdec default value */
   int garbage_size = 8 * 1024; /* 8 MB - Swfdec default value */
@@ -72,6 +73,7 @@ main (int argc, char *argv[])
     { "cache-size", 'c', 0, G_OPTION_ARG_INT, &cache_size, "Maxmimum amount of memory to be used as cache (default: 50MB)", "KB" },
     { "format", 'f', 0, G_OPTION_ARG_CALLBACK, parse_pixel_format, "pixel format to use for the outpt window", "FORMAT" },
     { "garbage-size", 'g', 0, G_OPTION_ARG_INT, &garbage_size, "Amount of kB before garbage collection runs (default: 8MB)", "KB" },
+    { "no-background", 'b', 0, G_OPTION_ARG_NONE, &no_background, "Disable rendering of the background (allows transparency)", NULL },
     { "size", 's', 0, G_OPTION_ARG_STRING, &size, "WIDTHxHEIGHT to specify a size or \'fullscreen\' to run fullscreen", "STRING" },
     { NULL }
   };
@@ -99,6 +101,8 @@ main (int argc, char *argv[])
   player = swfdec_dfb_player_new_from_file (dfb, argv[1]);
   g_object_set (player, "cache-size", (gulong) cache_size * 1024, 
       "memory-until-gc", (gulong) garbage_size * 1024, NULL);
+  if (no_background)
+    g_object_set (player, "background-color", 0, NULL);
 
   dsc.flags = DSDESC_CAPS;
   dsc.caps = DSCAPS_DOUBLE | DSCAPS_PRIMARY;
