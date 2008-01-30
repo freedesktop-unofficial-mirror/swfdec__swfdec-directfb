@@ -159,7 +159,10 @@ swfdec_dfb_player_new (IDirectFB *dfb, SwfdecAsDebugger *debugger)
 
   g_return_val_if_fail (dfb != NULL, NULL);
   swfdec_init ();
-  player = g_object_new (SWFDEC_TYPE_DFB_PLAYER, "debugger", debugger, NULL);
+  player = g_object_new (SWFDEC_TYPE_DFB_PLAYER, 
+      "loader-type", SWFDEC_TYPE_FILE_LOADER, "socket-type", SWFDEC_TYPE_SOCKET,
+      "debugger", debugger, 
+      NULL);
   SWFDEC_DFB_PLAYER (player)->dfb = dfb;
   dfb->AddRef (dfb);
 
