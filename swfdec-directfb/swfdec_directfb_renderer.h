@@ -20,7 +20,7 @@
 #ifndef _SWFDEC_DFB_RENDERER_H_
 #define _SWFDEC_DFB_RENDERER_H_
 
-#include <libswfdec/swfdec.h>
+#include <swfdec/swfdec.h>
 #include <directfb.h>
 
 G_BEGIN_DECLS

@@ -24,6 +24,261 @@
 #include "swfdec-directfb/swfdec_directfb_player.h"
 #include "swfdec-directfb/swfdec_source.h"
 
+/*** KEY TRANSLATION ***/
+
+/* FIXME: add these
+      return SWFDEC_KEY_CLEAR;
+      return SWFDEC_KEY_HELP;
+      return SWFDEC_KEY_GRAVE;
+      return SWFDEC_KEY_APOSTROPHE;
+      return SWFDEC_KEY_F13;
+      return SWFDEC_KEY_F14;
+      return SWFDEC_KEY_F15;
+*/
+SwfdecKey
+swfdec_dfb_key_from_identifier (DFBInputDeviceKeyIdentifier id)
+{
+  switch (id) {
+    case DIKI_A:
+      return SWFDEC_KEY_A;
+    case DIKI_B:
+      return SWFDEC_KEY_B;
+    case DIKI_C:
+      return SWFDEC_KEY_C;
+    case DIKI_D:
+      return SWFDEC_KEY_D;
+    case DIKI_E:
+      return SWFDEC_KEY_E;
+    case DIKI_F:
+      return SWFDEC_KEY_F;
+    case DIKI_G:
+      return SWFDEC_KEY_G;
+    case DIKI_H:
+      return SWFDEC_KEY_H;
+    case DIKI_I:
+      return SWFDEC_KEY_I;
+    case DIKI_J:
+      return SWFDEC_KEY_J;
+    case DIKI_K:
+      return SWFDEC_KEY_K;
+    case DIKI_L:
+      return SWFDEC_KEY_L;
+    case DIKI_M:
+      return SWFDEC_KEY_M;
+    case DIKI_N:
+      return SWFDEC_KEY_N;
+    case DIKI_O:
+      return SWFDEC_KEY_O;
+    case DIKI_P:
+      return SWFDEC_KEY_P;
+    case DIKI_Q:
+      return SWFDEC_KEY_Q;
+    case DIKI_R:
+      return SWFDEC_KEY_R;
+    case DIKI_S:
+      return SWFDEC_KEY_S;
+    case DIKI_T:
+      return SWFDEC_KEY_T;
+    case DIKI_U:
+      return SWFDEC_KEY_U;
+    case DIKI_V:
+      return SWFDEC_KEY_V;
+    case DIKI_W:
+      return SWFDEC_KEY_W;
+    case DIKI_X:
+      return SWFDEC_KEY_X;
+    case DIKI_Y:
+      return SWFDEC_KEY_Y;
+    case DIKI_Z:
+      return SWFDEC_KEY_Z;
+    case DIKI_0:
+      return SWFDEC_KEY_0;
+    case DIKI_1:
+      return SWFDEC_KEY_1;
+    case DIKI_2:
+      return SWFDEC_KEY_2;
+    case DIKI_3:
+      return SWFDEC_KEY_3;
+    case DIKI_4:
+      return SWFDEC_KEY_4;
+    case DIKI_5:
+      return SWFDEC_KEY_5;
+    case DIKI_6:
+      return SWFDEC_KEY_6;
+    case DIKI_7:
+      return SWFDEC_KEY_7;
+    case DIKI_8:
+      return SWFDEC_KEY_8;
+    case DIKI_9:
+      return SWFDEC_KEY_9;
+    case DIKI_F1:
+      return SWFDEC_KEY_F1;
+    case DIKI_F2:
+      return SWFDEC_KEY_F2;
+    case DIKI_F3:
+      return SWFDEC_KEY_F3;
+    case DIKI_F4:
+      return SWFDEC_KEY_F4;
+    case DIKI_F5:
+      return SWFDEC_KEY_F5;
+    case DIKI_F6:
+      return SWFDEC_KEY_F6;
+    case DIKI_F7:
+      return SWFDEC_KEY_F7;
+    case DIKI_F8:
+      return SWFDEC_KEY_F8;
+    case DIKI_F9:
+      return SWFDEC_KEY_F9;
+    case DIKI_F10:
+      return SWFDEC_KEY_F10;
+    case DIKI_F11:
+      return SWFDEC_KEY_F11;
+    case DIKI_F12:
+      return SWFDEC_KEY_F12;
+    case DIKI_SHIFT_L:
+      return SWFDEC_KEY_SHIFT;
+    case DIKI_SHIFT_R:
+      return SWFDEC_KEY_SHIFT;
+    case DIKI_CONTROL_L:
+      return SWFDEC_KEY_CONTROL;
+    case DIKI_CONTROL_R:
+      return SWFDEC_KEY_CONTROL;
+    case DIKI_ALT_L:
+      return SWFDEC_KEY_ALT;
+    case DIKI_ALT_R:
+      return SWFDEC_KEY_ALT;
+    case DIKI_META_L:
+      return 0; /* FIXME */
+    case DIKI_META_R:
+      return 0; /* FIXME */
+    case DIKI_SUPER_L:
+      return 0; /* FIXME */
+    case DIKI_SUPER_R:
+      return 0; /* FIXME */
+    case DIKI_HYPER_L:
+      return 0; /* FIXME */
+    case DIKI_HYPER_R:
+      return 0; /* FIXME */
+    case DIKI_CAPS_LOCK:
+      return SWFDEC_KEY_CAPS_LOCK;
+    case DIKI_NUM_LOCK:
+      return SWFDEC_KEY_NUM_LOCK;
+    case DIKI_SCROLL_LOCK:
+      return 0; /* FIXME */
+    case DIKI_ESCAPE:
+      return SWFDEC_KEY_ESCAPE;
+    case DIKI_LEFT:
+      return SWFDEC_KEY_LEFT;
+    case DIKI_RIGHT:
+      return SWFDEC_KEY_RIGHT;
+    case DIKI_UP:
+      return SWFDEC_KEY_UP;
+    case DIKI_DOWN:
+      return SWFDEC_KEY_DOWN;
+    case DIKI_TAB:
+      return SWFDEC_KEY_TAB;
+    case DIKI_ENTER:
+      return SWFDEC_KEY_ENTER;
+    case DIKI_SPACE:
+      return SWFDEC_KEY_SPACE;
+    case DIKI_BACKSPACE:
+      return SWFDEC_KEY_BACKSPACE;
+    case DIKI_INSERT:
+      return SWFDEC_KEY_INSERT;
+    case DIKI_DELETE:
+      return SWFDEC_KEY_DELETE;
+    case DIKI_HOME:
+      return SWFDEC_KEY_HOME;
+    case DIKI_END:
+      return SWFDEC_KEY_END;
+    case DIKI_PAGE_UP:
+      return SWFDEC_KEY_PAGE_UP;
+    case DIKI_PAGE_DOWN:
+      return SWFDEC_KEY_PAGE_DOWN;
+    case DIKI_PRINT:
+      return 0; /* FIXME */
+    case DIKI_PAUSE:
+      return 0; /* FIXME */
+    case DIKI_QUOTE_LEFT:
+      return 0; /* FIXME */
+    case DIKI_MINUS_SIGN:
+      return SWFDEC_KEY_MINUS;
+    case DIKI_EQUALS_SIGN:
+      return SWFDEC_KEY_EQUAL;
+    case DIKI_BRACKET_LEFT:
+      return SWFDEC_KEY_LEFT_BRACKET;
+    case DIKI_BRACKET_RIGHT:
+      return SWFDEC_KEY_RIGHT_BRACKET;
+    case DIKI_BACKSLASH:
+      return SWFDEC_KEY_BACKSLASH;
+    case DIKI_SEMICOLON:
+      return SWFDEC_KEY_SEMICOLON;
+    case DIKI_QUOTE_RIGHT:
+      return 0; /* FIXME */
+    case DIKI_COMMA:
+      return 0; /* FIXME */
+    case DIKI_PERIOD:
+      return 0; /* FIXME */
+    case DIKI_SLASH:
+      return SWFDEC_KEY_SLASH;
+    case DIKI_LESS_SIGN:
+      return 0; /* FIXME */
+    case DIKI_KP_DIV:
+      return SWFDEC_KEY_NUMPAD_DIVIDE;
+    case DIKI_KP_MULT:
+      return SWFDEC_KEY_NUMPAD_MULTIPLY;
+    case DIKI_KP_MINUS:
+      return SWFDEC_KEY_NUMPAD_SUBTRACT;
+    case DIKI_KP_PLUS:
+      return SWFDEC_KEY_NUMPAD_ADD;
+    case DIKI_KP_ENTER:
+      return SWFDEC_KEY_ENTER;
+    case DIKI_KP_SPACE:
+      return SWFDEC_KEY_SPACE;
+    case DIKI_KP_TAB:
+      return SWFDEC_KEY_TAB;
+    case DIKI_KP_F1:
+      return SWFDEC_KEY_F1;
+    case DIKI_KP_F2:
+      return SWFDEC_KEY_F2;
+    case DIKI_KP_F3:
+      return SWFDEC_KEY_F3;
+    case DIKI_KP_F4:
+      return SWFDEC_KEY_F4;
+    case DIKI_KP_EQUAL:
+      return SWFDEC_KEY_EQUAL;
+    case DIKI_KP_SEPARATOR:
+      return 0; /* FIXME */
+    case DIKI_KP_DECIMAL:
+      return SWFDEC_KEY_NUMPAD_DECIMAL;
+    case DIKI_KP_0:
+      return SWFDEC_KEY_NUMPAD_0;
+    case DIKI_KP_1:
+      return SWFDEC_KEY_NUMPAD_1;
+    case DIKI_KP_2:
+      return SWFDEC_KEY_NUMPAD_2;
+    case DIKI_KP_3:
+      return SWFDEC_KEY_NUMPAD_3;
+    case DIKI_KP_4:
+      return SWFDEC_KEY_NUMPAD_4;
+    case DIKI_KP_5:
+      return SWFDEC_KEY_NUMPAD_5;
+    case DIKI_KP_6:
+      return SWFDEC_KEY_NUMPAD_6;
+    case DIKI_KP_7:
+      return SWFDEC_KEY_NUMPAD_7;
+    case DIKI_KP_8:
+      return SWFDEC_KEY_NUMPAD_8;
+    case DIKI_KP_9:
+      return SWFDEC_KEY_NUMPAD_9;
+    case DIKI_UNKNOWN:
+    case DIKI_KEYDEF_END:
+    case DIKI_NUMBER_OF_KEYS:
+    default:
+       return 0;
+  }
+}
+
 enum {
   PROP_0,
   PROP_PLAYING,
@@ -33,7 +288,7 @@ enum {
   PROP_HANDLE_EVENTS
 };
 
-/*** dfb-doc ***/
+/*** GTK-DOC ***/
 
 /**
  * SECTION:SwfdecDfbPlayer
@@ -324,8 +579,24 @@ swfdec_dfb_player_handle_input_event (SwfdecDfbPlayer *player, const DFBInputEve
 
   switch (event->type) {
     case DIET_KEYPRESS:
+      {
+	SwfdecKey key = swfdec_dfb_key_from_identifier (event->key_id);
+	if (key == 0) {
+	  g_printerr ("find the key for keycode %u", event->key_id);
+	} else {
+	  swfdec_player_key_press (SWFDEC_PLAYER (player), key, event->key_symbol);
+	}
+      }
+      break;
     case DIET_KEYRELEASE:
-      /* FIXME! */
+      {
+	SwfdecKey key = swfdec_dfb_key_from_identifier (event->key_id);
+	if (key == 0) {
+	  g_printerr ("find the key for keycode %u", event->key_id);
+	} else {
+	  swfdec_player_key_release (SWFDEC_PLAYER (player), key, event->key_symbol);
+	}
+      }
       break;
     case DIET_BUTTONPRESS:
       swfdec_player_mouse_press (SWFDEC_PLAYER (player), 

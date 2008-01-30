@@ -20,7 +20,7 @@
 #ifndef _SWFDEC_DFB_PLAYER_H_
 #define _SWFDEC_DFB_PLAYER_H_
 
-#include <libswfdec/swfdec.h>
+#include <swfdec/swfdec.h>
 #include <directfb.h>
 
 G_BEGIN_DECLS
@@ -79,6 +79,7 @@ gboolean	swfdec_dfb_player_set_handle_events	(SwfdecDfbPlayer *	player,
 							 gboolean		handle_events);
 gboolean      	swfdec_dfb_player_get_handle_events	(SwfdecDfbPlayer *	player);
 
+SwfdecKey	swfdec_dfb_key_from_identifier		(DFBInputDeviceKeyIdentifier id);
 
 
 G_END_DECLS
