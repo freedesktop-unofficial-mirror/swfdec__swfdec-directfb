@@ -39,6 +39,7 @@ main (int argc, char *argv[])
   DFBSurfaceDescription dsc;
   SwfdecPlayer *player;
   SwfdecDfbRenderer *renderer;
+  SwfdecURL *url;
   guint w, h;
   IDirectFB *dfb;
   IDirectFBSurface *surface;
@@ -77,7 +78,10 @@ main (int argc, char *argv[])
   }
   
   ERROR_CHECK (DirectFBCreate (&dfb));
-  player = swfdec_player_new_from_file (argv[1]);
+  player = swfdec_player_new (NULL);
+  url = swfdec_url_new_from_input (argv[1]);
+  swfdec_player_set_url (player, url);
+  swfdec_url_free (url);
   next_event = swfdec_player_get_next_event (player);
   while (next_event >= 0 && !swfdec_player_is_initialized (player)) {
     swfdec_player_advance (player, next_event);
