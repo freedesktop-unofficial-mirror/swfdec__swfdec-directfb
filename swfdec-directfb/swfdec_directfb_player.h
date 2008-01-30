@@ -56,8 +56,6 @@ GType 		swfdec_dfb_player_get_type    	(void);
 
 SwfdecPlayer *	swfdec_dfb_player_new	      	(IDirectFB *		dfb,
 						 SwfdecAsDebugger *	debugger);
-SwfdecPlayer *	swfdec_dfb_player_new_from_file	(IDirectFB *		dfb,
-						 const char *		filename);
 
 void		swfdec_dfb_player_set_playing 	(SwfdecDfbPlayer *	player,
 						 gboolean		playing);

@@ -167,34 +167,6 @@ swfdec_dfb_player_new (IDirectFB *dfb, SwfdecAsDebugger *debugger)
 }
 
 /**
- * swfdec_dfb_player_new_from_file:
- * @filename: name of file to play
- *
- * Create a player to play back the given file. Note that there is no way to 
- * figure out if the referenced URI really references a file that Swfdec can 
- * play back. If you need this, you should use #SwfdecDfbLoader directly and 
- * use its error property.
- * This function calls swfdec_init () for you if it wasn't called before.
- *
- * Returns: a new player.
- **/
-SwfdecPlayer *
-swfdec_dfb_player_new_from_file (IDirectFB *dfb, const char *filename)
-{
-  SwfdecLoader *loader;
-  SwfdecPlayer *player;
-
-  g_return_val_if_fail (dfb != NULL, NULL);
-  g_return_val_if_fail (filename != NULL, NULL);
-
-  player = swfdec_dfb_player_new (dfb, NULL);
-  loader = swfdec_file_loader_new (filename);
-  swfdec_player_set_loader (player, loader);
-
-  return player;
-}
-
-/**
  * swfdec_dfb_player_set_playing:
  * @player: a #SwfdecDfbPlayer
  * @playing: if the player should play or not
