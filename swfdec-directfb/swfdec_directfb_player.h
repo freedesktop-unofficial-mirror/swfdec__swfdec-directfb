@@ -54,20 +54,18 @@ struct _SwfdecDfbPlayerClass
 
 GType 		swfdec_dfb_player_get_type    	(void);
 
-SwfdecPlayer *	swfdec_dfb_player_new	      	(IDirectFB *		dfb,
-						 SwfdecAsDebugger *	debugger);
+SwfdecPlayer *	swfdec_dfb_player_new		  	(IDirectFB *		dfb,
+							 SwfdecAsDebugger *	debugger);
 
-void		swfdec_dfb_player_set_playing 	(SwfdecDfbPlayer *	player,
-						 gboolean		playing);
-gboolean	swfdec_dfb_player_get_playing 	(SwfdecDfbPlayer *	player);
-void		swfdec_dfb_player_set_audio_enabled	
-						(SwfdecDfbPlayer *	player,
-						 gboolean		enabled);
-gboolean	swfdec_dfb_player_get_audio_enabled
-						(SwfdecDfbPlayer *	player);
-void		swfdec_dfb_player_set_speed	(SwfdecDfbPlayer *	player,
-						 double			speed);
-double		swfdec_dfb_player_get_speed 	(SwfdecDfbPlayer *	player);
+void		swfdec_dfb_player_set_playing	  	(SwfdecDfbPlayer *	player,
+							 gboolean		playing);
+gboolean	swfdec_dfb_player_get_playing	 	(SwfdecDfbPlayer *	player);
+void		swfdec_dfb_player_set_audio_enabled   	(SwfdecDfbPlayer *	player,
+							 gboolean		enabled);
+gboolean	swfdec_dfb_player_get_audio_enabled	(SwfdecDfbPlayer *	player);
+void		swfdec_dfb_player_set_speed		(SwfdecDfbPlayer *	player,
+							 double			speed);
+double		swfdec_dfb_player_get_speed		(SwfdecDfbPlayer *	player);
 
 
 
