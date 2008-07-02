@@ -1,18 +1,19 @@
 AC_PREREQ([2.58])
-AC_INIT(swfdec-directfb,0.5.5.1)
+AC_INIT(swfdec-directfb,0.7.3)
 
-[nano=$(echo $PACKAGE_VERSION | sed 's/[0-9]\.[0-9]\.[0-9][0-9]*\.*//')]
-if test x"$nano" = x1 ; then
+[is_dev=$(echo $PACKAGE_VERSION | sed 's/[0-9]\.[0-9][0-9]*\.[0-9]*[13579]/1/')]
+if test x"$is_dev" = x1 ; then
   SWFDEC_CVS="yes"
 else
   SWFDEC_CVS="no"
 fi
 
+
 AM_INIT_AUTOMAKE(1.6)
 dnl AC_CANONICAL_TARGET([])
 AM_MAINTAINER_MODE
 
-SWFDEC_MAJORMINOR=0.5
+SWFDEC_MAJORMINOR=0.7
 AC_SUBST(SWFDEC_MAJORMINOR)
 
 AM_CONFIG_HEADER(config.h)
@@ -52,7 +53,7 @@ AC_ARG_WITH(pkg-config-path,
 dnl Check for essential libraries first:
 dnl ====================================
 
-SWFDEC_REQUIRES=0.5.5.1
+SWFDEC_REQUIRES=0.7.3
 AC_SUBST(SWFDEC_REQUIRES)
 PKG_CHECK_MODULES(SWFDEC, swfdec-$SWFDEC_MAJORMINOR = $SWFDEC_REQUIRES, HAVE_SWFDEC=yes, HAVE_SWFDEC=no)
 if test "$HAVE_SWFDEC" = "no"; then
