@@ -1,5 +1,5 @@
 /* Swfdec
- * Copyright (C) 2007 Benjamin Otte <otte@gnome.org>
+ * Copyright (C) 2007-2008 Benjamin Otte <otte@gnome.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,10 @@ swfdec_dfb_renderer_dispose (GObject *object)
     g_object_unref (renderer->player);
     renderer->player = NULL;
   }
+  if (renderer->repaint_area) {
+    g_array_free (renderer->repaint_area, TRUE);
+    renderer->repaint_area = NULL;
+  }
   if (renderer->repaint_id) {
     g_source_remove (renderer->repaint_id);
     renderer->repaint_id = 0;
@@ -63,6 +67,7 @@ swfdec_dfb_renderer_class_init (SwfdecDfbRendererClass * g_class)
 static void
 swfdec_dfb_renderer_init (SwfdecDfbRenderer * renderer)
 {
+  renderer->repaint_area = g_array_new (FALSE, FALSE, sizeof (SwfdecRectangle));
 }
 
 /*** PUBLIC API ***/
@@ -73,40 +78,20 @@ swfdec_dfb_renderer_do_render (gpointer rendererp)
   SwfdecDfbRenderer *renderer = rendererp;
 
   renderer->repaint_id = 0;
-  swfdec_dfb_renderer_render (renderer, 
-      renderer->repaint_area.x, renderer->repaint_area.y,
-      renderer->repaint_area.width, renderer->repaint_area.height);
+  swfdec_dfb_renderer_render (renderer, (const SwfdecRectangle *) renderer->repaint_area->data,
+      renderer->repaint_area->len);
+  g_array_set_size (renderer->repaint_area, 0);
   return FALSE;
 }
 
 static void
-swfdec_dfb_renderer_queue_repaint (SwfdecDfbRenderer *renderer, const SwfdecRectangle *rect)
+swfdec_dfb_renderer_queue_repaint (SwfdecDfbRenderer *renderer, 
+    const SwfdecRectangle *rects, guint n_rects)
 {
-  if (renderer->repaint_id) {
-    swfdec_rectangle_union (&renderer->repaint_area, &renderer->repaint_area, rect);
-  } else {
-    renderer->repaint_area = *rect;
+  if (!renderer->repaint_id) {
     renderer->repaint_id = g_idle_add (swfdec_dfb_renderer_do_render, renderer);
   }
-}
-
-static void
-swfdec_dfb_renderer_invalidate_cb (SwfdecPlayer *player, const SwfdecRectangle *extents,
-    const SwfdecRectangle *rects, guint n_rects, SwfdecDfbRenderer *renderer)
-{
-  SwfdecRectangle tmp = *extents;
-
-  if (tmp.x + tmp.width > renderer->width) {
-    if (tmp.x >= renderer->width)
-      return;
-    tmp.width = renderer->width - tmp.x;
-  }
-  if (tmp.y + tmp.height > renderer->height) {
-    if (tmp.y >= renderer->height)
-      return;
-    tmp.height = renderer->height - tmp.y;
-  }
-  swfdec_dfb_renderer_queue_repaint (renderer, &tmp);
+  g_array_append_vals (renderer->repaint_area, rects, n_rects);
 }
 
 SwfdecDfbRenderer *
@@ -127,32 +112,41 @@ swfdec_dfb_renderer_new (IDirectFB *dfb, IDirectFBSurface *surface,
   renderer->surface = cairo_directfb_surface_create (dfb, surface);
   surface->GetSize (surface, &renderer->width, &renderer->height);
   renderer->player = g_object_ref (player);
-  g_signal_connect (player, "invalidate", G_CALLBACK (swfdec_dfb_renderer_invalidate_cb), renderer);
+  g_signal_connect_swapped (player, "invalidate", G_CALLBACK (swfdec_dfb_renderer_queue_repaint), renderer);
   rect.x = rect.y = 0;
   rect.width = renderer->width;
   rect.height = renderer->height;
-  swfdec_dfb_renderer_queue_repaint (renderer, &rect);
+  swfdec_dfb_renderer_queue_repaint (renderer, &rect, 1);
 
   return renderer;
 }
 
 void
-swfdec_dfb_renderer_render (SwfdecDfbRenderer *renderer, int x, int y,
-    int width, int height)
+swfdec_dfb_renderer_render (SwfdecDfbRenderer *renderer, 
+    const SwfdecRectangle *areas, guint n_areas)
 {
-  DFBRegion region = { x, y, x + width - 1, y + height - 1 };
+  DFBRegion region;
   cairo_t *cr;
+  guint i;
 
   g_return_if_fail (SWFDEC_IS_DFB_RENDERER (renderer));
-  g_return_if_fail (x >= 0);
-  g_return_if_fail (y >= 0);
-  g_return_if_fail (width > 0);
-  g_return_if_fail (height > 0);
-  g_return_if_fail (x + width <= renderer->width);
-  g_return_if_fail (y + height <= renderer->height);
+  g_return_if_fail (n_areas > 0);
 
   cr = cairo_create (renderer->surface);
-  swfdec_player_render (renderer->player, cr, x, y, width, height);
+  /* FIXME: don't just accumulate, create a proper region here */
+  region.x1 = areas->x;
+  region.y1 = areas->y;
+  region.x2 = areas->x + areas->width - 1;
+  region.y2 = areas->y + areas->height - 1;
+  for (i = 1; i < n_areas; i++) {
+    region.x1 = MIN (region.x1, areas[i].x);
+    region.y1 = MIN (region.y1, areas[i].y);
+    region.x2 = MAX (region.x2, areas[i].x + areas[i].width - 1);
+    region.y2 = MAX (region.y2, areas[i].y + areas[i].height - 1);
+  }
+  cairo_rectangle (cr, region.x1, region.y1, region.x2 + 1 - region.x1, region.y2 + 1 - region.y1);
+  cairo_clip (cr);
+  swfdec_player_render (renderer->player, cr);
   cairo_destroy (cr);
   renderer->dfbsurface->Flip (renderer->dfbsurface, &region, DSFLIP_ONSYNC);
 }

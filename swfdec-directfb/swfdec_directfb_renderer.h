@@ -1,5 +1,5 @@
 /* Swfdec
- * Copyright (C) 2007 Benjamin Otte <otte@gnome.org>
+ * Copyright (C) 2007-2008 Benjamin Otte <otte@gnome.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,7 +44,7 @@ struct _SwfdecDfbRenderer
 
   IDirectFBSurface *	dfbsurface;	/* surface we render to (reference held by cairo surface) */
   cairo_surface_t *	surface;	/* same in cairo terms (we reference it) */
-  SwfdecRectangle	repaint_area;	/* rectange that needs repainting */
+  GArray *		repaint_area;	/* SwfdecRectangle array that needs repainting */
   guint			repaint_id;	/* ID of source for repainting or 0 if none */
   /* cached values */
   int			width;
@@ -63,10 +63,8 @@ SwfdecDfbRenderer *	swfdec_dfb_renderer_new			(IDirectFB *		dfb,
 								 SwfdecPlayer *		player);
 
 void			swfdec_dfb_renderer_render		(SwfdecDfbRenderer *	renderer,
-							         int			x,
-							         int			y,
-							         int			width,
-							         int			height);
+								 const SwfdecRectangle *rects,
+								 guint			n_rects);
 
 
 G_END_DECLS
